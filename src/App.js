@@ -1,48 +1,40 @@
 import './App.css';
 import Moralis from "moralis";
-import { useMoralis } from "react-moralis";
+import { useMoralis, useNativeBalance, useERC20Balances } from "react-moralis";
 
 function App() {
-  const { authenticate, logout, isAuthenticated, user } = useMoralis();
+  const { authenticate, isAuthenticated, signup, login, logout, user } = useMoralis();
+  const { data: eth } = useNativeBalance({ chain: "ropsten" });
+  const { data: erc20 } = useERC20Balances({ chain: "ropsten" });
 
-  const signUpUser = async () => {
-    const user = new Moralis.User();
-    user.set("username", "username");
-    user.set("password", "password");
-    user.set("email", "email@example.com");
+  // const sendToken = () => {
 
-    // other fields can be set just like with Moralis.Object
-    user.set("phone", "997");
-    user.set("siemanko", "siemanko");
-    try {
-      await user.signUp();
-      // Hooray! Let them use the app now.
-    } catch ({ code, message }) {
-      // Show the code and error message.
-      alert(`Error: ${code} ${message}`);
-    }
+  // }
+
+  const getNativeBalance = () => {
+    console.log('eth', eth);
+    const amount = Moralis.Units.FromWei(eth.balance, 18);
+    console.log('amount', amount);
   }
 
-  const logInUser = async () => {
-    try {
-      const user = await Moralis.User.logIn("username", "password");
-      // Do stuff after successful login.
-      console.log('user', user);
-    } catch ({ code, message }) {
-      // Show the code and error message.
-      alert(`Error: ${code} ${message}`);
-    }
+  const getERC20balance = () => {
+    console.log('erc20', erc20);
+    const amount = Moralis.Units.FromWei(erc20[0].balance, erc20[0].decimals);
+    console.log('amount', amount);
   }
 
   return (
     <div className="App">
       <header className="App-header">
-        <button onClick={authenticate}>Authenticate via MetaMask</button>
-        <button onClick={logout}>Logout from MetaMask</button>
+        <button onClick={() => authenticate({ signingMessage: "Hello Mages" })}>Authenticate via MetaMask</button>
+        <button onClick={() => login('username', 'password')}>Log in User</button>
+        <button onClick={() => logout()}>Logout</button>
         <button onClick={() => console.log('user', user)}>Check User</button>
+        <button onClick={() => signup('username', 'password', 'email@example.com', { phone: "01234567" })}>Sign up User</button>
         {isAuthenticated ? 'auth' : 'notAuth'}
-        <button onClick={signUpUser}>Sign up User</button>
-        <button onClick={logInUser}>Log in User</button>
+        {/* <button onClick={sendToken}>Send Token</button> */}
+        <button onClick={getNativeBalance}>Get native balance</button>
+        <button onClick={getERC20balance}>ERC20 Balance</button>
       </header>
     </div>
   );
